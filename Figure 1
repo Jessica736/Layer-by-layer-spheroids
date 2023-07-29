@@ -1,0 +1,79 @@
+#Code for Figure 1e-g
+
+library(dplyr)
+library(Seurat)
+library(patchwork)
+
+#D-score - deconvolution
+setwd("/Users/jessicaking/Documents/PhD/Spheroid-scRNAseq/2-layer spheroids") #select the folder where the D-score code is saved
+source("DScore.R")
+
+channel1<-dscore(
+  path="/Users/jessicaking/Documents/PhD/Spheroid-scRNAseq/cellranger/1-GEX/filtered_feature_bc_matrix", 
+  # List of features to include
+  features=c("SBO01-cy5", "SBO02-cy3", "SBO13-cy3", "SBO14-cy5"),
+  # Name of the assignment category csv output file
+  cat.filename="2layer-Category-Cellhashing-Dscore.csv"
+)
+
+#Processing
+channel1[["percent.mt"]] <- PercentageFeatureSet(channel1, pattern = "^MT-")
+VlnPlot(channel1, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3) 
+plot1 <- FeatureScatter(channel1, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(channel1, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+channel1 <- subset(channel1, subset = nFeature_RNA > 200 & nFeature_RNA < 8000 & percent.mt < 10)  
+print(channel1) #8333 cells
+
+#add sample names
+Samples <- c("SBO01-cy5" = "Cy5_1", 'SBO02-cy3' = "Cy3_1", 
+             'SBO14-cy5' = "Cy5_2", 'SBO13-cy3' = "Cy5_2")
+names <- as.character(Samples[channel1$dscore])
+seurat_combined <- AddMetaData(channel1, metadata = names, col.name = 'Sample')
+
+samp1 <- subset(x = seurat_combined, subset = Sample == c('Cy5_1'))
+samp2 <- subset(x = seurat_combined, subset = Sample == c('Cy3_1'))
+
+ALL <- merge(samp1, y=c(samp2))
+normdata <- NormalizeData(ALL, normalization.method = "LogNormalize", scale.factor = 10000)
+normdata <- FindVariableFeatures(normdata, selection.method = "vst", nfeatures = 3000)
+top10 <- head(VariableFeatures(normdata), 10)
+plot1 <- VariableFeaturePlot(normdata)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot2
+all.genes <- rownames(normdata)
+scaled_data <- ScaleData(normdata) 
+dim_red <- RunPCA(scaled_data, features = VariableFeatures(object = scaled_data))
+print(dim_red[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(dim_red, dims = 1:2, reduction = "pca")
+DimPlot(dim_red, reduction = "pca")
+DimHeatmap(dim_red, dims = 1:20, cells = 500, balanced = TRUE)
+ElbowPlot(dim_red)
+
+#Cluster the cells
+SCdata <- FindNeighbors(dim_red, dims = 1:20)
+SCdata <- FindClusters(SCdata, resolution = 0.4)
+SCdata <- RunUMAP(SCdata, dims = 1:20)
+SCdata <- RunTSNE(SCdata, dims = 1:20)
+
+FeatureScatter(SCdata, feature1 = "SBO01-cy5", feature2 = "SBO02-cy3", cols = c("#007756")) +
+  xlim(-100, 30000) + ylim(-100, 30000) + ylab("Cy3-SBO") + xlab("Cy5-SBO") +
+  geom_abline(intercept = 0, slope = 1, linetype = 2) + theme(text = element_text(size = 12))
+
+VlnPlot(SCdata, features = "nCount_RNA", cols = c("#FFCB57", "#D99BBD"),
+        pt.size = 0.1, log = TRUE, group.by = "Sample", ncol = 1) + ylab("Number of UMIs per cell") +
+  theme(plot.title = element_blank(), legend.position = "none",  text = element_text(size = 12),
+        axis.text.x = element_text(angle = 0, vjust = -1))
+
+VlnPlot(SCdata, features = "nCount_HTO", cols = c("#FFCB57", "#D99BBD"),
+        pt.size = 0.1, log = TRUE, group.by = "Sample", ncol = 1) + ylab("SBO reads per cell") +
+  theme(plot.title = element_blank(), legend.position = "none",  text = element_text(size = 12),
+        axis.text.x = element_text(angle = 0, vjust = -1))
+
+summary(SCdata@meta.data) #for metadata summary
+
+
+
+
+
+
