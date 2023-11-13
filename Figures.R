@@ -4,13 +4,14 @@
 # single-cell RNA sequencing analysis 
 #
 # Code authors: Jessica J. King and Cameron W. Evans
-# Date: October 2023
+# Date: 13 November 2023
 #
 # Contents:
 # line 17   Preliminary declarations and setup
-# line 46   Figure 1: Untreated 2-layer spheroids
-# line 267  Figure 2: Untreated 3-layer spheroids
-# line 543  Figure 4/5: Treated 3-layer spheroids
+# line 48   Figure 1: Untreated 2-layer spheroids
+# line 279  Figure 2: Untreated 3-layer spheroids
+# line 550  Figure 4: Treated 3-layer spheroids
+# line 861  Figure 5: Treated 3-layer spheroids
 # ================================================================
 
 
@@ -1074,81 +1075,3 @@ rm(f, outputFilename)
 
 # Clear SC experiment
 rm(SCdata, SCdata_all, Avg_exp_cluster, Avg_exp_sample)
-
-
-
-
-
-
-
-
-
-
-
-
-
-SCdata  <- SetIdent(SCdata, value = SCdata$Sample)
-all.markers_markers <- FindAllMarkers(SCdata,
-                                      min.pct = 0.25, 
-                                      logfc.threshold = 0.25,
-                                      return.thresh = 0.05)
-all.markers_markers <- filter(all.markers_markers, p_val_adj < 0.05)
-
-dfsample <- split(all.markers_markers$gene,all.markers_markers$cluster)
-dfsample$`control-core` = bitr(dfsample$`control-core`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
-dfsample$`control-middle` = bitr(dfsample$`control-middle`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
-dfsample$`control-periphery` = bitr(dfsample$`control-periphery`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
-genelist <- list("control-core" = dfsample$`control-core`$ENTREZID,
-                 "control-middle" = dfsample$`control-middle`$ENTREZID,
-                 "control-periphery" = dfsample$`control-periphery`$ENTREZID)
-
-GOclusterplot <- compareCluster(geneCluster = genelist, fun = "enrichGO", OrgDb = "org.Hs.eg.db")
-dotplot(GOclusterplot, x = "Cluster", color = "p.adjust", showCategory = 10, 
-        by = "geneRatio",
-        size = "Count",
-        split = NULL,
-        includeAll = TRUE,
-        font.size = 10,
-        title = "",
-        label_format = 50,
-        group = FALSE,
-        shape = FALSE) 
-
-# Alternatively:
-all.markers_markers = FindMarkers(SCdata, ident.1 = "control-core", ident.2 = "control-periphery")
-all.markers_markers = FindMarkers(SCdata, ident.1 = "drug-core", ident.2 = "drug-periphery")
-all.markers_markers = FindMarkers(SCdata, ident.1 = "drug-periphery", ident.2 = "drug-core")
-all.markers_markers <- filter(all.markers_markers, p_val_adj < 0.05)
-dfsample <- data.frame(rownames(all.markers_markers), all.markers_markers$avg_log2FC, row.names = rownames(all.markers_markers))
-colnames(dfsample) <- c("SYMBOL","avg_log2FC")
-map <- bitr(rownames(dfsample), fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
-dfsample <- merge(map,dfsample)
-
-geneList = dfsample[,3]
-names(geneList) = as.character(dfsample[,2])
-geneList = sort(geneList, decreasing = TRUE)
-
-gse <- gseGO(geneList, ont = "ALL",
-      OrgDb = "org.Hs.eg.db",
-      keyType = "ENTREZID",
-      exponent = 1,
-      minGSSize = 1,
-      maxGSSize = 500,
-      eps = 1e-10,
-      pvalueCutoff = 0.05,
-      pAdjustMethod = "BH",
-      verbose = TRUE,
-      seed = FALSE,
-      by = "fgsea")
-dotplot(gse,
-        x = "GeneRatio",
-        color = "p.adjust",
-        showCategory = 50,
-        size = NULL,
-        split = NULL,
-        font.size = 12,
-        title = "",
-        orderBy = "x",
-        label_format = 100
-)
-
