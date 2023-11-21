@@ -1,7 +1,7 @@
 # Multi-layer-spheroids
 
-Spatial transcriptomics techniques have been widely used to map the spatial organisation of multiple cell types within tissue sections. 
-Here, we use transient transfection to label cells within 3D cell cultures with DNA barcodes that are compatible with multiplexed single-cell RNA sequencing.  
-Therefore, we can collect spatially relevant transcriptomics information at the single-cell level. 
-We demonstrate that this method can be used to construct 3D spheroids layer-by-layer to map drug response and mechanical heterogeneity. 
-Here the code used to generate the figures in our paper is presented. 
+## Abstract
+Spatial transcriptomics has been widely used to capture gene expression profiles, realised as a two-dimensional (2D) projection of RNA captured from tissue sections. Three-dimensional (3D) cultures such as spheroids and organoids are highly promising alternatives to oversimplified and homogeneous 2D cell culture models, but existing spatial transcriptomic platforms do not currently have sufficient resolution for robust analysis of 3D cultures. We present a transfection-based method for fluorescent DNA barcoding of cell populations, and the subsequent construction of spheroidal cellular architectures using barcoded cells in a layer-by-layer approach. For the first time, changes in gene expression throughout this 3D culture architecture are interrogated using multiplex single-cell RNA sequencing in which DNA barcodes are used to encode the spatial positioning of cells. We show that transfection with fluorophore-conjugated barcode oligonucleotides enables both imaging and sequencing at single-cell resolution, providing spatial maps of gene expression and drug response. Additionally, we show that fluorophore-conjugated DNA barcodes support correlative imaging studies such as mechano-microscopy to capture information about spatially-varying mechanical heterogeneity in 3D cultures. The ability to create customised, encoded cellular assemblies is a general approach that can resolve spatial differences in gene expression in 3D cell culture models.
+
+## Source data
+Single-cell sequencing datasets generated in this study have been deposited in the National Centre for Biotechnology Information (NCBI) Gene Expression Omnibus (GEO) under accession number GSE245416.
