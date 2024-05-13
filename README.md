@@ -5,3 +5,6 @@ Spatial transcriptomics has been widely used to capture gene expression profiles
 
 ## Source data
 Single-cell sequencing datasets generated in this study have been deposited in the National Centre for Biotechnology Information (NCBI) Gene Expression Omnibus (GEO) under accession number GSE245416.
+
+## Demo data
+The two .RData files included in this repository have been truncated to reduce file size but should work for simplified demo and testing purposes. The results using the demo data will differ from those presented in the manuscript.
